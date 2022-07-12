@@ -56,13 +56,26 @@ class tipoProducto {
 }
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+////////////////////////////////  FUNCIONES PARA EL MANEJO   ////////////////////////////////////////
+////////////////////////////////  DEL ARREGLO DE PRODUCTOS   ////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// ARREGLO CON LOS PRODUCTOS DEL SISTEMA
+var productos = obtenerProductos();
+
+
 function obtenerProductos(){
    let productosLocalStorage = JSON.parse(localStorage.getItem("productos"));
    let productos = [];
    if(productosLocalStorage){
       for(const prod of productosLocalStorage){
-         console.log("El prod almacenado es: \n");
-         console.log(prod);
+         //console.log("El prod almacenado es: \n");
+         //console.log(prod);
          productos.push(new tipoProducto(prod.marca, prod.modelo, prod.precio, prod.stock));
       }
    }
@@ -75,16 +88,9 @@ function almacenarProductos(prods){
 }
 
 
-var productos = obtenerProductos();
-
-
 function hayProductos(){
-    console.log(productos);
-    if(productos.length > 0){
-        return true;
-    }else{
-        return false;
-    }
+    //console.log(productos);
+    return (productos.length > 0 ) ? true : false;
 }
 
 
@@ -147,46 +153,6 @@ function modificarPrecio(marca, modelo, precio){
 }
 
 
-function pedirNumero(mensaje){
-    let num = prompt(mensaje);
-    while(isNaN(num) || num == null || num.length == 0 || num % 1 != 0){
-        console.log("El número ingresado es: " + num); 
-        num = prompt("Debe ingresar un número sin decimales");
-    }
-    return num;
-}
-
-
-function pedirNumeroPositivoMayorACero(mensaje){
-    let num = prompt(mensaje);
-    while(isNaN(num) || num == null || num.length == 0 || num <= 0){
-        console.log("El número ingresado es: " + num); 
-        num = prompt("Debe ingresar un número positivo");
-    }
-    return num;
-}
-
-
-function pedirNumeroPositivoMayorIgualACero(mensaje){
-    let num = prompt(mensaje);
-    while(isNaN(num) || num == null || num.length == 0 || num < 0){
-        console.log("El número ingresado es: " + num); 
-        num = prompt("Debe ingresar un número mayor o igual a cero");
-    }
-    return num;
-}
-
-
-function pedirDato(mensaje){
-    let dato = prompt(mensaje);
-    while(dato == null || dato.length == 0){
-        console.log("El dato ingresado es: " + dato); 
-        dato = prompt("Debe ingresar algo no vacío");
-    }
-    return dato;
-}
-
-
 function obtenerProducto(marca, modelo){
     // Si existe el producto, lo retorna. Si no, retorna undefined
     return productos.find(function(prod){
@@ -226,101 +192,39 @@ function listarProductos(){
     return mensaje;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////  TERMINAN LAS FUNCIONES PARA EL MANEJO DEL ARREGLO  ////////////////////////////////////////////
 
 
-function agregarProducto(marca, modelo, precio, stock){
-    if(marca == null || marca.length == 0 || modelo == null || modelo.length == 0){
-        return "La marca y modelo no pueden ser vacíos";
-    }else if(precio <= 0){
-        return "El precio debe ser mayor a cero";
-    }else{
-        console.log("Existe? " + existeProducto(marca, modelo));
-        if(! existeProducto(marca, modelo)){
-            productos.push(new tipoProducto(String(marca), String(modelo), precio, stock));
-            almacenarProductos(productos);
-            return "Producto agregado correctamente"
-        }else{
-            return "El producto ya existe";
-        }
-    }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+////////////////////////////////  FUNCIONES PARA EL MANEJO   ////////////////////////////////////////
+////////////////////////////////           DEL DOM           ////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function alertOK(mensaje){
+   Swal.fire(
+      mensaje,
+      'success'
+    )
 }
 
 
-function agregarEntrada(divProd, idProd, texto, leyenda){
-    let div1 = document.createElement("div");
-    div1.innerHTML = `<div class="input-group mb-3 mt-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">${texto}</span>
-                        </div>
-                        <input id="${idProd}" type="text" class="form-control" placeholder="${leyenda}" aria-label="Username" aria-describedby="basic-addon1">
-                    </div>`;
-    divProd.append(div1);
+function limpiarPanel(){
+   // Limpio el panel
+   document.getElementById("divContRes") && document.getElementById("divContRes").remove();
+   document.getElementById("pMensaje") && document.getElementById("pMensaje").remove();
 }
 
 
-function crearDivAgregarProducto(divCR){
-    // Agrego las entradas al panel de resultados con los id correspondientes y el mensaje final de estado
-    agregarEntrada(divCR, "marcaAgregarProducto", "Marca:", "Ingrese la marca");
-    agregarEntrada(divCR, "modeloAgregarProducto","Modelo:", "Ingrese el modelo");
-    agregarEntrada(divCR, "precioAgregarProducto","Precio:", "Debe ser mayor a cero");
-    agregarEntrada(divCR, "stockAgregarProducto", "Stock:", "Ingrese un valor positivo o cero");
-    
-    let botonAgregar = document.createElement("button");
-    botonAgregar.classList.add("btn");
-    botonAgregar.classList.add("btn-primary");
-    botonAgregar.textContent = 'Agregar';
-    botonAgregar.disabled = true;
-    botonAgregar.setAttribute("id", "btnAgregarProducto");
-    
-    let pMensaje = document.createElement("p");
-    pMensaje.classList.add("lead");
-    pMensaje.setAttribute("id", "pMensaje");
-
-    divCR.append(botonAgregar);
-    divCR.append(pMensaje);
+function crearPanel(){
+   let divContenidoResultados = document.createElement("div");
+   divContenidoResultados.setAttribute("id", "divContRes")
+   document.getElementById("resultados").append(divContenidoResultados);
+   return divContenidoResultados;
 }
-
-
-function rellenarCamposModificar(e){
-   // Se toma el texto seleccionado del dropdown de productos para rellenar los campos
-   // marca, modelo, precio y stock con los valores del producto seleccionado
-   const [ma, mo] = e.target.innerText.split("|");
-   let {marca, modelo, precio, stock} = obtenerProducto(ma, mo);
-
-
-   document.getElementById("marcaModifProducto").value = marca;
-   document.getElementById("modeloModifProducto").value = modelo;
-   let precioModifProducto = document.getElementById("precioModifProducto");
-   let stockModifProducto = document.getElementById("stockModifProducto");
-   
-   // La marca y el modelo no se puede modificar y quedan deshabilitados
-   precioModifProducto.disabled = false;
-   stockModifProducto.disabled = false;
-   precioModifProducto.value = precio;
-   stockModifProducto.value = stock;
-
-   // Limpio el mensaje 
-   document.getElementById("pMensaje").innerText = "";
-}
-
-
-function modificarProducto(){
-   // Si el precio y stock ingresados son correctos, se setean precio y stock del producto seleccionado
-   let marca = document.getElementById("marcaModifProducto").value;
-   let modelo = document.getElementById("modeloModifProducto").value;
-   let precioModifProducto = document.getElementById("precioModifProducto");
-   let stockModifProducto = document.getElementById("stockModifProducto");
-   let producto = obtenerProducto(marca, modelo);
-   producto.setPrecio(precioModifProducto.value);
-   producto.setStock(stockModifProducto.value);
-   
-   // Guardo en el local storage los cambios realizados
-   almacenarProductos(productos);
-   let pMensaje = document.getElementById("pMensaje");
-   pMensaje.innerText = "Producto modificado correctamente";
-}
-
 
 function verificarEntradaPrecio(entradaPrecio){
     // Se verifica que el valor del precio ingresado sea un número positivo o cero. En ese caso se retorna true
@@ -354,6 +258,64 @@ function verificarEntradaStock(entradaStock){
 }
 
 
+function agregarEntrada(divProd, idProd, texto, leyenda){
+   let div1 = document.createElement("div");
+   div1.innerHTML = `<div class="input-group mb-3 mt-3">
+                       <div class="input-group-prepend">
+                           <span class="input-group-text" id="basic-addon1">${texto}</span>
+                       </div>
+                       <input id="${idProd}" type="text" class="form-control" placeholder="${leyenda}" aria-label="Username" aria-describedby="basic-addon1">
+                   </div>`;
+   divProd.append(div1);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+////////////////////////////////  MODIFICACION DE PRODUCTOS  ////////////////////////////////////////
+////////////////////////////////                             ////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function rellenarCamposModificar(e){
+   // Se toma el texto seleccionado del dropdown de productos para rellenar los campos
+   // marca, modelo, precio y stock con los valores del producto seleccionado
+   const [ma, mo] = e.target.innerText.split("|");
+   let {marca, modelo, precio, stock} = obtenerProducto(ma, mo);
+
+   // La marca y el modelo no se puede modificar y quedan deshabilitados
+   document.getElementById("marcaModifProducto").value = marca;
+   document.getElementById("modeloModifProducto").value = modelo;
+   
+   let precioModifProducto = document.getElementById("precioModifProducto");
+   precioModifProducto.disabled = false;
+   precioModifProducto.value = precio;
+
+   let stockModifProducto = document.getElementById("stockModifProducto");
+   stockModifProducto.disabled = false;
+   stockModifProducto.value = stock;
+   
+   // Limpio el mensaje 
+   document.getElementById("pMensaje").innerText = "";
+}
+
+
+function modificarProducto(){
+   // Si el precio y stock ingresados son correctos, se setean precio y stock del producto seleccionado
+   let marca = document.getElementById("marcaModifProducto").value;
+   let modelo = document.getElementById("modeloModifProducto").value;
+
+
+   let producto = obtenerProducto(marca, modelo);
+   producto.setPrecio(document.getElementById("precioModifProducto").value);
+   producto.setStock(document.getElementById("stockModifProducto").value);
+   
+   // Guardo en el local storage los cambios realizados
+   almacenarProductos(productos);
+   // COLOCAR SWEETALERT
+   alertOK("Producto modificado correctamente");
+}
+
+
 function verificarEntradasModifProd(){
    // Si los valores de precio y stock son correctos se habilita el botón para modificar el producto
    let [okModificarPrecioProducto, okModificarStockProducto] = [false, false];
@@ -383,11 +345,9 @@ function crearDivModificarProductos(divCR){
    agregarEntrada(divCR, "stockModifProducto", "Stock:", "Ingrese un valor positivo o cero");
    document.getElementById("marcaModifProducto").disabled = true;
    document.getElementById("modeloModifProducto").disabled = true;
-   let precioModifProducto = document.getElementById("precioModifProducto");
-   let stockModifProducto = document.getElementById("stockModifProducto");
-   precioModifProducto.disabled = true;
-   stockModifProducto.disabled = true;
-
+   document.getElementById("precioModifProducto").disabled = true;
+   document.getElementById("stockModifProducto").disabled = true;
+   
    let botonModificar = document.createElement("button");
    botonModificar.classList.add("btn");
    botonModificar.classList.add("btn-primary");
@@ -420,6 +380,50 @@ function crearDivModificarProductos(divCR){
 }
 
 
+function modificarProductosHTML(){
+   limpiarPanel();
+   let divContenidoResultados = crearPanel();
+   crearDivModificarProductos(divContenidoResultados);
+
+   let precioModifProducto = document.getElementById("precioModifProducto");
+   precioModifProducto && precioModifProducto.addEventListener("keydown", verificarEntradasModifProd);
+   precioModifProducto && precioModifProducto.addEventListener("focusout", verificarEntradasModifProd);
+   precioModifProducto && precioModifProducto.addEventListener("keyup", verificarEntradasModifProd);
+
+   let stockModifProducto = document.getElementById("stockModifProducto");
+   stockModifProducto && stockModifProducto.addEventListener("keydown", verificarEntradasModifProd);
+   stockModifProducto && stockModifProducto.addEventListener("focusout", verificarEntradasModifProd);
+   stockModifProducto && stockModifProducto.addEventListener("keyup", verificarEntradasModifProd);
+}
+
+//////////////////////////    TERMINA MODIFICACION DE PRODUCTOS      /////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////                         /////////////////////////////////////////
+///////////////////////////////////  AGREGAGO DE PRODUCTOS  /////////////////////////////////////////
+///////////////////////////////////                         /////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function agregarProducto(marca, modelo, precio, stock){
+   if(marca == null || marca.length == 0 || modelo == null || modelo.length == 0){
+       return "La marca y modelo no pueden ser vacíos";
+   }else if(precio <= 0){
+       return "El precio debe ser mayor a cero";
+   }else{
+       console.log("Existe? " + existeProducto(marca, modelo));
+       if(! existeProducto(marca, modelo)){
+           productos.push(new tipoProducto(String(marca), String(modelo), precio, stock));
+           almacenarProductos(productos);
+           return "Producto agregado correctamente"
+       }else{
+           return "El producto ya existe";
+       }
+   }
+}
+
+
 function verificarEntradasAgregar(){
     // Verificación de los valores de entrada
 
@@ -431,12 +435,11 @@ function verificarEntradasAgregar(){
     let okAgregarProductoStock = false;
     let okAgregarProductoMarcaModelo= false;
     
-    let entradaMarca = document.getElementById("marcaAgregarProducto");
-    let entradaModelo = document.getElementById("modeloAgregarProducto");
-    let marca = entradaMarca.value;
-    let modelo = entradaModelo.value;
+    let marca = document.getElementById("marcaAgregarProducto").value;
+    let modelo = document.getElementById("modeloAgregarProducto").value;
 
     document.getElementById("pMensaje").innerText = "";
+
     if(marca && modelo){
         console.log(existeProducto(marca, modelo));
         if(! existeProducto(marca, modelo)){
@@ -466,11 +469,8 @@ function verificarEntradasAgregar(){
     okAgregarProductoStock = verificarEntradaStock(document.getElementById("stockAgregarProducto"));
 
     // Si todas las entradas son correctas se habilita el botón
-    if(okAgregarProductoMarcaModelo && okAgregarProductoPrecio && okAgregarProductoStock){
-        document.getElementById("btnAgregarProducto").disabled = false;
-    }else{
-        document.getElementById("btnAgregarProducto").disabled = true;
-    }
+    let btnAddProd = document.getElementById("btnAgregarProducto");
+    (okAgregarProductoMarcaModelo && okAgregarProductoPrecio && okAgregarProductoStock) ? btnAddProd.disabled = false : btnAddProd.disabled = true;
 }
 
 
@@ -482,6 +482,7 @@ function agregarProductoEvento(){
     let precioEntrada = document.getElementById("precioAgregarProducto");
     let stockEntrada = document.getElementById("stockAgregarProducto");
     let [marca, modelo, precio, stock] = [marcaEntrada.value, modeloEntrada.value, precioEntrada.value, stockEntrada.value];
+    // AGREGAR SWEETALERT
     document.getElementById("pMensaje").innerText = agregarProducto(marca, modelo, precio, stock);
     document.getElementById("btnAgregarProducto").disabled = true;
     marcaEntrada.value = "";
@@ -491,34 +492,34 @@ function agregarProductoEvento(){
 }
 
 
-function limpiarPanel(){
-    let div = document.getElementById("divContRes");
-    // Limpio el panel
-    if(div){
-        div.remove();
-    }
-    let p = document.getElementById("pMensaje");
-    if(p){
-        p.remove();
-    }
-}
+function crearDivAgregarProducto(divCR){
+   // Agrego las entradas al panel de resultados con los id correspondientes y el mensaje final de estado
+   agregarEntrada(divCR, "marcaAgregarProducto", "Marca:", "Ingrese la marca");
+   agregarEntrada(divCR, "modeloAgregarProducto","Modelo:", "Ingrese el modelo");
+   agregarEntrada(divCR, "precioAgregarProducto","Precio:", "Debe ser mayor a cero");
+   agregarEntrada(divCR, "stockAgregarProducto", "Stock:", "Ingrese un valor positivo o cero");
+   
+   let botonAgregar = document.createElement("button");
+   botonAgregar.classList.add("btn");
+   botonAgregar.classList.add("btn-primary");
+   botonAgregar.textContent = 'Agregar';
+   botonAgregar.disabled = true;
+   botonAgregar.setAttribute("id", "btnAgregarProducto");
+   
+   let pMensaje = document.createElement("p");
+   pMensaje.classList.add("lead");
+   pMensaje.setAttribute("id", "pMensaje");
 
-
-function crearPanel(){
-   let resultados = document.getElementById("resultados");
-   let divContenidoResultados = document.createElement("div");
-   divContenidoResultados.setAttribute("id", "divContRes")
-   resultados.append(divContenidoResultados);
-   return divContenidoResultados;
+   divCR.append(botonAgregar);
+   divCR.append(pMensaje);
 }
 
 
 function agregarProductosHTML(){
    limpiarPanel();
-    
    // Contenido donde se muestran los contenidos de los resultados de clicks
    // en los botones principales
-    
+
    let divContenidoResultados = crearPanel();
    
    // Se crean las entradas para agregar productos
@@ -526,89 +527,56 @@ function agregarProductosHTML(){
 
    // Agregado de eventListener a la entrada de precio
    let entradaPrecio = document.getElementById("precioAgregarProducto");
-   if(entradaPrecio){
-      entradaPrecio.addEventListener("keydown", verificarEntradasAgregar);
-      entradaPrecio.addEventListener("focusout", verificarEntradasAgregar);
-      entradaPrecio.addEventListener("keyup", verificarEntradasAgregar);
-   }
+   entradaPrecio && entradaPrecio.addEventListener("keydown", verificarEntradasAgregar);
+   entradaPrecio && entradaPrecio.addEventListener("focusout", verificarEntradasAgregar);
+   entradaPrecio && entradaPrecio.addEventListener("keyup", verificarEntradasAgregar);
 
    // Agregado de eventListener a la entrada de Stock
    let entradaStock = document.getElementById("stockAgregarProducto");
-   if(entradaPrecio){
-      entradaStock.addEventListener("keydown", verificarEntradasAgregar);
-      entradaStock.addEventListener("focusout", verificarEntradasAgregar);
-      entradaStock.addEventListener("keyup", verificarEntradasAgregar);
-   }
+   entradaPrecio && entradaStock.addEventListener("keydown", verificarEntradasAgregar);
+   entradaPrecio && entradaStock.addEventListener("focusout", verificarEntradasAgregar);
+   entradaPrecio && entradaStock.addEventListener("keyup", verificarEntradasAgregar);
 
    // Agregado de eventListener a la entrada de marca
    let entradaMarca = document.getElementById("marcaAgregarProducto");
-   if(entradaPrecio){
-      entradaMarca.addEventListener("keydown", verificarEntradasAgregar);
-      entradaMarca.addEventListener("focusout", verificarEntradasAgregar);
-      entradaMarca.addEventListener("keyup", verificarEntradasAgregar);
-   }
+   entradaPrecio && entradaMarca.addEventListener("keydown", verificarEntradasAgregar);
+   entradaPrecio && entradaMarca.addEventListener("focusout", verificarEntradasAgregar);
+   entradaPrecio && entradaMarca.addEventListener("keyup", verificarEntradasAgregar);
 
    // Agregado de eventListener a la entrada del modelo
    let entradaModelo = document.getElementById("modeloAgregarProducto");
-   if(entradaPrecio){
-      entradaModelo.addEventListener("keydown", verificarEntradasAgregar);
-      entradaModelo.addEventListener("focusout", verificarEntradasAgregar);
-      entradaModelo.addEventListener("keyup", verificarEntradasAgregar);
-   }
+   entradaPrecio && entradaModelo.addEventListener("focusout", verificarEntradasAgregar);
+   entradaPrecio && entradaModelo.addEventListener("keyup", verificarEntradasAgregar);
+   entradaPrecio && entradaModelo.addEventListener("keydown", verificarEntradasAgregar);
 
    // Agregado de eventListener al botón para agregar productos al sistema
    document.getElementById("btnAgregarProducto").addEventListener("click", agregarProductoEvento);
     
 }
 
+//////////////////////////    TERMINA AGREGADO DE PRODUCTOS      /////////////////////////////////
 
-function modificarProductosHTML(){
-   let resultados = document.getElementById("resultados");
-   limpiarPanel();
-   let divContenidoResultados = crearPanel();
-   crearDivModificarProductos(divContenidoResultados);
-
-   let precioModifProducto = document.getElementById("precioModifProducto");
-   if(precioModifProducto){
-      precioModifProducto.addEventListener("keydown", verificarEntradasModifProd);
-      precioModifProducto.addEventListener("focusout", verificarEntradasModifProd);
-      precioModifProducto.addEventListener("keyup", verificarEntradasModifProd);
-   }
-
-   let stockModifProducto = document.getElementById("stockModifProducto");
-   if(stockModifProducto){
-      stockModifProducto.addEventListener("keydown", verificarEntradasModifProd);
-      stockModifProducto.addEventListener("focusout", verificarEntradasModifProd);
-      stockModifProducto.addEventListener("keyup", verificarEntradasModifProd);
-   }
-}
 
 
 function listarProductosEvent(){
-    let resultados = document.getElementById("resultados");
-    
     limpiarPanel();
 
     let pMensaje = document.createElement("p");
     pMensaje.classList.add("lead")
     pMensaje.setAttribute("id", "pMensaje");
-    resultados.append(pMensaje);
+    document.getElementById("resultados").append(pMensaje);
     pMensaje.innerText = listarProductos();
 }
 
 
 // Botón Agregar Producto del menú de opciones
-let botonAgregar = document.getElementById("agregar");
-botonAgregar.addEventListener("click", agregarProductosHTML);
+document.getElementById("agregar").addEventListener("click", agregarProductosHTML);
 
 // Botón Agregar Producto del menú de opciones
-let botonModificar = document.getElementById("modificar");
-botonModificar.addEventListener("click", modificarProductosHTML);
-
+document.getElementById("modificar").addEventListener("click", modificarProductosHTML);
 
 // Botón Agregar Producto del menú de opciones
-let botonConsultar = document.getElementById("consultar");
-botonConsultar.addEventListener("click", listarProductosEvent);
+document.getElementById("consultar").addEventListener("click", listarProductosEvent);
 
 
 
